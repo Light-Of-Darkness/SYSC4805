@@ -5,8 +5,16 @@
 const int ULTRASONIC_OBJ_L = 4;
 const int ULTRASONIC_OBJ_R = 5;
 const int ULTRASONIC_EDGE = 6;
-const int ULTRASONIC_TRIG = 0;
+const int ULTRASONIC_TRIG = 7;
 //reuse the same pin to trigger all ultrasonic sensors
+
+//pins for controlling motor
+const int MOTOR_LEFT_F = 8;
+const int MOTOR_LEFT_R = 9;
+const int MOTOR_RIGHT_F = 10;
+const int MOTOR_RIGHT_R = 11;
+
+const int SENSOR_POWER = 13;    //checking if the sensor power supply is ON
 
 // ANALOG
 const int INFRARED_1 = A0;
@@ -21,14 +29,27 @@ const int OBJ_AVOID_DISTANCE = 10;
 
 int pollUltrasonicSensor(int sensorEchoPin);
 int objectDetection();
+void forward();
+void backward();
+void brake();
+void left();
+void right();
 //TODO: locomotion functions (rolling forward, turning)
 
 void setup() 
 {
+  //setting pin modes
   pinMode(ULTRASONIC_TRIG, OUTPUT);
   pinMode(ULTRASONIC_OBJ_L, INPUT);
   pinMode(ULTRASONIC_OBJ_R, INPUT);
   pinMode(ULTRASONIC_EDGE, INPUT);
+  pinMode(SENSOR_POWER, INPUT);
+  pinMode(MOTOR_LEFT_F, OUTPUT);
+  pinMode(MOTOR_LEFT_R, OUTPUT);
+  pinMode(MOTOR_RIGHT_F, OUTPUT);
+  pinMode(MOTOR_RIGHT_R, OUTPUT);
+  
+  brake();
 }
 
 void loop() 
@@ -36,6 +57,7 @@ void loop()
   /* priority is as follows:
    *  
    * SAFETY MECHANISMS HAVE TOP PRIORITY:
+   * if the sensors do not have power, the robot should not move
    * edge detection should stop the robot and reroute it
    * object avoidance should kick in if no edge is detected
    * 
@@ -44,42 +66,47 @@ void loop()
    * if no IR light is present, follow a black line on the ground using down-facing IR emitter/detector pairs
    * if no black line is present, roll forward
    */
-  int objD = objectDetection();
-  bool edgeDetected = false; //TODO: replace with edge detection function
-  //stub bools to emulate IR and line detection
-  bool irDetected = false;
-  bool lineDetected = false;
-  
-  //SAFETY CHECKS
-  if(edgeDetected)
+
+  //check if the sensors have power by seeing if power input is 5V
+  if(digitalRead(SENSOR_POWER) == HIGH)
   {
-    //TODO: rerouting
-  }
-  else if(objD != 0)
-  {
-    if(objD > 0)
+    int objD = objectDetection();
+    bool edgeDetected = false; //TODO: replace with edge detection function
+    //stub bools to emulate IR and line detection
+    bool irDetected = false;
+    bool lineDetected = false;
+    
+    //SAFETY CHECKS
+    if(edgeDetected)
     {
-      //more space on the right
-      //TODO: turn right
+      //TODO: rerouting
+    }
+    else if(objD != 0)
+    {
+      if(objD > 0)
+      {
+        //more space on the right
+        //TODO: turn right
+      }
+      else
+      {
+        //more space on the left
+        //TODO: turn left
+      }
+    }
+    else if(irDetected)       //Safety checks passed here, start maze solving
+    {
+      //TODO: robot following
+    }
+    else if(lineDetected)
+    {
+      //TODO: line following
     }
     else
     {
-      //more space on the left
-      //TODO: turn left
+      //default locomotion should be to roll forward until a higher-priority check is passed
+      //TODO: move forward
     }
-  }
-  else if(irDetected)       //Safety checks passed here, start maze solving
-  {
-    //TODO: robot following
-  }
-  else if(lineDetected)
-  {
-    //TODO: line following
-  }
-  else
-  {
-    //default locomotion should be to roll forward until a higher-priority check is passed
-    //TODO: move forward
   }
 }
 
@@ -126,4 +153,44 @@ int objectDetection()
   }
 
   return diff;
+}
+
+void forward()
+{
+  digitalWrite(MOTOR_LEFT_F, HIGH);
+  digitalWrite(MOTOR_LEFT_R, LOW);
+  digitalWrite(MOTOR_RIGHT_F, HIGH);
+  digitalWrite(MOTOR_RIGHT_R, LOW);
+}
+
+void backward()
+{
+  digitalWrite(MOTOR_LEFT_F, LOW);
+  digitalWrite(MOTOR_LEFT_R, HIGH);
+  digitalWrite(MOTOR_RIGHT_F, LOW);
+  digitalWrite(MOTOR_RIGHT_R, HIGH);
+}
+
+void left()
+{
+  digitalWrite(MOTOR_LEFT_F, LOW);
+  digitalWrite(MOTOR_LEFT_R, HIGH);
+  digitalWrite(MOTOR_RIGHT_F, HIGH);
+  digitalWrite(MOTOR_RIGHT_R, LOW);
+}
+
+void right()
+{
+  digitalWrite(MOTOR_LEFT_F, HIGH);
+  digitalWrite(MOTOR_LEFT_R, LOW);
+  digitalWrite(MOTOR_RIGHT_F, LOW);
+  digitalWrite(MOTOR_RIGHT_R, HIGH);
+}
+
+void brake()
+{
+  digitalWrite(MOTOR_LEFT_F, LOW);
+  digitalWrite(MOTOR_LEFT_R, LOW);
+  digitalWrite(MOTOR_RIGHT_F, LOW);
+  digitalWrite(MOTOR_RIGHT_R, LOW);
 }
