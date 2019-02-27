@@ -27,14 +27,17 @@ const float SPEED_OF_SOUND = 0.034;
 //begin object avoidance once the object is less than 10 cm from one of the sensors
 const int OBJ_AVOID_DISTANCE = 10;
 
+//threshold for edge detection
+const int FLOOR_DISTANCE = 4;
+
 int pollUltrasonicSensor(int sensorEchoPin);
 int objectDetection();
+bool edgeDetection();
 void forward();
 void backward();
 void brake();
 void left();
 void right();
-//TODO: locomotion functions (rolling forward, turning)
 
 void setup() 
 {
@@ -71,7 +74,7 @@ void loop()
   if(digitalRead(SENSOR_POWER) == HIGH)
   {
     int objD = objectDetection();
-    bool edgeDetected = false; //TODO: replace with edge detection function
+    bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
     bool irDetected = false;
     bool lineDetected = false;
@@ -80,6 +83,8 @@ void loop()
     if(edgeDetected)
     {
       //TODO: rerouting
+      //brake as a placeholder
+      brake();
     }
     else if(objD != 0)
     {
@@ -193,4 +198,15 @@ void brake()
   digitalWrite(MOTOR_LEFT_R, LOW);
   digitalWrite(MOTOR_RIGHT_F, LOW);
   digitalWrite(MOTOR_RIGHT_R, LOW);
+}
+
+bool edgeDetection()
+{
+   int distance = pollUltrasonicSensor(ULTRASONIC_EDGE);
+   if(distance > FLOOR_DISTANCE)
+   {
+    //edge detected
+    return true; 
+   }
+   return false;
 }
