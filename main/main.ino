@@ -110,7 +110,7 @@ void loop()
     else
     {
       //default locomotion should be to roll forward until a higher-priority check is passed
-      //TODO: move forward
+      forward();
     }
   }
 }
