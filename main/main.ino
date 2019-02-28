@@ -5,13 +5,13 @@
 const int ULTRASONIC_OBJ_L = 4;
 const int ULTRASONIC_OBJ_R = 5;
 const int ULTRASONIC_EDGE = 6;
-const int ULTRASONIC_TRIG = 7;
+const int ULTRASONIC_TRIG = 3;
 //reuse the same pin to trigger all ultrasonic sensors
 
 //pins for controlling motor
 const int MOTOR_LEFT_F = 8;
-const int MOTOR_LEFT_R = 9;
-const int MOTOR_RIGHT_F = 10;
+const int MOTOR_LEFT_R = 7;
+const int MOTOR_RIGHT_F = 12;
 const int MOTOR_RIGHT_R = 11;
 
 const int SENSOR_POWER = 13;    //checking if the sensor power supply is ON
@@ -51,7 +51,8 @@ void setup()
   pinMode(MOTOR_LEFT_R, OUTPUT);
   pinMode(MOTOR_RIGHT_F, OUTPUT);
   pinMode(MOTOR_RIGHT_R, OUTPUT);
-  
+  Serial.begin(9600);
+  delay(1000);
   brake();
 }
 
@@ -71,9 +72,9 @@ void loop()
    */
 
   //check if the sensors have power by seeing if power input is 5V
-  if(digitalRead(SENSOR_POWER) == HIGH)
-  {
-    int objD = objectDetection();
+  //if(digitalRead(SENSOR_POWER) == HIGH)
+  //{
+    int objD = 0; //objectDetection();
     bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
     bool irDetected = false;
@@ -84,6 +85,7 @@ void loop()
     {
       //TODO: rerouting
       //brake as a placeholder
+      Serial.println("Edge detected");
       brake();
     }
     else if(objD != 0)
@@ -110,9 +112,10 @@ void loop()
     else
     {
       //default locomotion should be to roll forward until a higher-priority check is passed
+      Serial.print("Forward\n");
       forward();
     }
-  }
+  //}
 }
 
 //polls the given sensor for distance in centimeters, accurate between 2 and 200 cm
@@ -131,7 +134,6 @@ int pollUltrasonicSensor(int sensorEchoPin)
 
   //calculate distance
   int distance = duration * SPEED_OF_SOUND/2;
-
   return distance;
 }
 
@@ -203,10 +205,12 @@ void brake()
 bool edgeDetection()
 {
    int distance = pollUltrasonicSensor(ULTRASONIC_EDGE);
+   Serial.print(distance);
    if(distance > FLOOR_DISTANCE)
    {
     //edge detected
     return true; 
    }
+   Serial.print("False\n");
    return false;
 }
