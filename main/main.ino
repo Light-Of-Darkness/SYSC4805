@@ -91,12 +91,12 @@ void loop()
       if(objD > 0)
       {
         //more space on the right
-        //TODO: turn right
+        right();
       }
       else
       {
         //more space on the left
-        //TODO: turn left
+        left()
       }
     }
     else if(irDetected)       //Safety checks passed here, start maze solving
