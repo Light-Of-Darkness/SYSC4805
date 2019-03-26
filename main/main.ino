@@ -16,10 +16,10 @@ const int MOTOR_RIGHT_R = 11;
 
 const int SENSOR_POWER = 13;    //checking if the sensor power supply is ON
 
-// ANALOG
-const int INFRARED_1 = A0;
-const int INFRARED_2 = A1;
-const int INFRARED_3 = A2;
+// infrared
+const int INFRARED_left = 2;
+const int INFRARED_right = 3;
+//const int INFRARED_3 = A2;
 
 //speed of sound in cm/us
 const float SPEED_OF_SOUND = 0.034;
@@ -46,6 +46,8 @@ void setup()
   pinMode(ULTRASONIC_OBJ_L, INPUT);
   pinMode(ULTRASONIC_OBJ_R, INPUT);
   pinMode(ULTRASONIC_EDGE, INPUT);
+  pinMode(INFRARED_left, INPUT);
+  pinMode(INFRARED_right, INPUT);
   pinMode(SENSOR_POWER, INPUT);
   pinMode(MOTOR_LEFT_F, OUTPUT);
   pinMode(MOTOR_LEFT_R, OUTPUT);
@@ -76,8 +78,9 @@ void loop()
     int objD = objectDetection();
     bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
-    bool irDetected = false;
-    bool lineDetected = false;
+   // bool irDetected = false;
+    bool leftLineDetected = leftLineDetection();
+    bool rightLineDetected = rightLineDetection();
     
     //SAFETY CHECKS
     if(edgeDetected)
@@ -91,21 +94,33 @@ void loop()
       if(objD > 0)
       {
         //more space on the right
+        //TODO: turn right
         right();
       }
       else
       {
         //more space on the left
-        left()
+        //TODO: turn left
+        left();
       }
     }
-    else if(irDetected)       //Safety checks passed here, start maze solving
+//    else if(irDetected)       //Safety checks passed here, start maze solving
+//    {
+//      //TODO: robot following
+//    }
+    else if(leftLineDetected == HIGH && rightLineDetected==HIGH)
     {
-      //TODO: robot following
+        brake();
     }
-    else if(lineDetected)
+    else if(leftLineDetected == LOW && rightLineDetected==LOW)
     {
-      //TODO: line following
+        forward();
+    }
+    else if (leftLineDetected == HIGH && rightLineDetected == LOW){
+        left();
+    }
+    else if (rightLineDetected == HIGH && leftLineDetected == LOW){
+        right();
     }
     else
     {
@@ -209,4 +224,14 @@ bool edgeDetection()
     return true; 
    }
    return false;
+}
+
+bool leftLineDetection()
+{
+  return digitalRead(INFRARED_left);
+}
+
+bool rightLineDetection()
+{
+  return digitalRead(INFRARED_right);
 }
