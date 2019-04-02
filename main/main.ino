@@ -17,9 +17,14 @@ const int MOTOR_RIGHT_R = 11;
 const int SENSOR_POWER = 13;    //checking if the sensor power supply is ON
 
 // infrared
-const int INFRARED_left = 2;
-const int INFRARED_right = 3;
-//const int INFRARED_3 = A2;
+const int INFRARED_left = 14;
+const int INFRARED_middle = 15;
+const int INFRARED_right = 16;
+const int INFRARED_test = 17;
+const int INFRARED_end = 18;
+
+const int IRDETEC_left = 2;
+const int IRDETEC_right = 3;
 
 //speed of sound in cm/us
 const float SPEED_OF_SOUND = 0.034;
@@ -47,7 +52,12 @@ void setup()
   pinMode(ULTRASONIC_OBJ_R, INPUT);
   pinMode(ULTRASONIC_EDGE, INPUT);
   pinMode(INFRARED_left, INPUT);
+  pinMode(INFRARED_middle, INPUT);
   pinMode(INFRARED_right, INPUT);
+  pinMode(INFRARED_test, INPUT);
+  pinMode(INFRARED_end, INPUT);
+  pinMode(IRDETEC_left, INPUT);
+  pinMode(IRDETEC_right, INPUT);
   pinMode(SENSOR_POWER, INPUT);
   pinMode(MOTOR_LEFT_F, OUTPUT);
   pinMode(MOTOR_LEFT_R, OUTPUT);
@@ -79,8 +89,14 @@ void loop()
     bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
    // bool irDetected = false;
-    bool leftLineDetected = leftLineDetection();
-    bool rightLineDetected = rightLineDetection();
+   char IRleft,IRmiddle,IRright,IRtest,IRend,left,right;
+   IRleft=digitalRead(INFRARED_left);
+   IRmiddle=digitalRead(INFRARED_middle);
+   IRright=digitalRead(INFRARED_right);
+   IRtest=digitalRead(INFRARED_test);
+   IRend=digitalRead(INFRARED_end);
+   IRDETECleft=digitalRead(IRDETEC_left);
+   IRDETECright=digitalRead(IRDETEC_right);
     
     //SAFETY CHECKS
     if(edgeDetected)
@@ -104,23 +120,30 @@ void loop()
         left();
       }
     }
-//    else if(irDetected)       //Safety checks passed here, start maze solving
-//    {
-//      //TODO: robot following
-//    }
-    else if(leftLineDetected == HIGH && rightLineDetected==HIGH)
-    {
-        brake();
-    }
-    else if(leftLineDetected == LOW && rightLineDetected==LOW)
-    {
+    else if(IRDETECleft==0||IRDETECright==0){
+      if(IRDETECleft==0&&IRDETECright==0){
         forward();
-    }
-    else if (leftLineDetected == HIGH && rightLineDetected == LOW){
+      }else if(IRDETECleft==0){
         left();
-    }
-    else if (rightLineDetected == HIGH && leftLineDetected == LOW){
+      }else if(IRDETECright==0){
         right();
+      }else{
+        brake();
+      }
+    }
+    else if(IRtest==0){
+      if(IRend==0&&IRleft==0&&IRmiddle==0&&IRright==0){
+        brake();
+      }
+      else if(IRleft==0){
+        left();
+      }else if(IRmiddle==0){
+        forward();
+      }else if(IRright==0){
+        right();
+      }else{
+        left();
+      }
     }
     else
     {
@@ -169,7 +192,7 @@ int objectDetection()
     diff = rightD - leftD;
     //if the object is equidistant from both front facing sensors, make diff non-zero so that the function does not falsely return no object detected
     if(diff == 0)
-      diff++;
+      diff--;
   }
 
   return diff;
@@ -224,14 +247,4 @@ bool edgeDetection()
     return true; 
    }
    return false;
-}
-
-bool leftLineDetection()
-{
-  return digitalRead(INFRARED_left);
-}
-
-bool rightLineDetection()
-{
-  return digitalRead(INFRARED_right);
 }
