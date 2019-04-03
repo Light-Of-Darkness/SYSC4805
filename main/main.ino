@@ -41,8 +41,8 @@ bool edgeDetection();
 void forward();
 void backward();
 void brake();
-void left();
-void right();
+void move_left();
+void move_right();
 
 void setup() 
 {
@@ -89,7 +89,7 @@ void loop()
     bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
    // bool irDetected = false;
-   char IRleft,IRmiddle,IRright,IRtest,IRend,left,right;
+   char IRleft,IRmiddle,IRright,IRtest,IRend,left,right,IRDETECleft,IRDETECright;
    IRleft=digitalRead(INFRARED_left);
    IRmiddle=digitalRead(INFRARED_middle);
    IRright=digitalRead(INFRARED_right);
@@ -111,22 +111,22 @@ void loop()
       {
         //more space on the right
         //TODO: turn right
-        right();
+        move_right();
       }
       else
       {
         //more space on the left
         //TODO: turn left
-        left();
+        move_left();
       }
     }
     else if(IRDETECleft==0||IRDETECright==0){
       if(IRDETECleft==0&&IRDETECright==0){
         forward();
       }else if(IRDETECleft==0){
-        left();
+        move_left();
       }else if(IRDETECright==0){
-        right();
+        move_right();
       }else{
         brake();
       }
@@ -136,13 +136,13 @@ void loop()
         brake();
       }
       else if(IRleft==0){
-        left();
+        move_left();
       }else if(IRmiddle==0){
         forward();
       }else if(IRright==0){
-        right();
+        move_right();
       }else{
-        left();
+        move_left();
       }
     }
     else
@@ -214,7 +214,7 @@ void backward()
   digitalWrite(MOTOR_RIGHT_R, HIGH);
 }
 
-void left()
+void move_left()
 {
   digitalWrite(MOTOR_LEFT_F, LOW);
   digitalWrite(MOTOR_LEFT_R, HIGH);
@@ -222,7 +222,7 @@ void left()
   digitalWrite(MOTOR_RIGHT_R, LOW);
 }
 
-void right()
+void move_right()
 {
   digitalWrite(MOTOR_LEFT_F, HIGH);
   digitalWrite(MOTOR_LEFT_R, LOW);
