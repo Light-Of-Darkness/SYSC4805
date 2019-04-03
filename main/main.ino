@@ -33,7 +33,7 @@ const float SPEED_OF_SOUND = 0.034;
 const int OBJ_AVOID_DISTANCE = 10;
 
 //threshold for edge detection
-const int FLOOR_DISTANCE = 4;
+const int FLOOR_DISTANCE = 4; //UPDATE VALUE
 
 int pollUltrasonicSensor(int sensorEchoPin);
 int objectDetection();
