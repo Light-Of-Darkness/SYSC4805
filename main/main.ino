@@ -5,14 +5,14 @@
 const int ULTRASONIC_OBJ_L = 4;
 const int ULTRASONIC_OBJ_R = 5;
 const int ULTRASONIC_EDGE = 6;
-const int ULTRASONIC_TRIG = 7;
+const int ULTRASONIC_TRIG = 9;
 //reuse the same pin to trigger all ultrasonic sensors
 
 //pins for controlling motor
-const int MOTOR_LEFT_F = 8;
-const int MOTOR_LEFT_R = 9;
-const int MOTOR_RIGHT_F = 10;
-const int MOTOR_RIGHT_R = 11;
+const int MOTOR_LEFT_F = 12;
+const int MOTOR_LEFT_R = 11;
+const int MOTOR_RIGHT_F = 8;
+const int MOTOR_RIGHT_R = 7;
 
 const int SENSOR_POWER = 13;    //checking if the sensor power supply is ON
 
@@ -30,7 +30,7 @@ const int IRDETEC_right = 3;
 const float SPEED_OF_SOUND = 0.034;
 
 //begin object avoidance once the object is less than 10 cm from one of the sensors
-const int OBJ_AVOID_DISTANCE = 10;
+const int OBJ_AVOID_DISTANCE = 15;
 
 //threshold for edge detection
 const int FLOOR_DISTANCE = 4;
@@ -38,6 +38,7 @@ const int FLOOR_DISTANCE = 4;
 int pollUltrasonicSensor(int sensorEchoPin);
 int objectDetection();
 bool edgeDetection();
+
 void forward();
 void backward();
 void brake();
@@ -47,6 +48,7 @@ void right();
 void setup() 
 {
   //setting pin modes
+  Serial.begin(9600); 
   pinMode(ULTRASONIC_TRIG, OUTPUT);
   pinMode(ULTRASONIC_OBJ_L, INPUT);
   pinMode(ULTRASONIC_OBJ_R, INPUT);
@@ -63,12 +65,15 @@ void setup()
   pinMode(MOTOR_LEFT_R, OUTPUT);
   pinMode(MOTOR_RIGHT_F, OUTPUT);
   pinMode(MOTOR_RIGHT_R, OUTPUT);
+
+  delay(5000);
   
   brake();
 }
 
 void loop() 
 {
+  //delay(2000);
   /* priority is as follows:
    *  
    * SAFETY MECHANISMS HAVE TOP PRIORITY:
@@ -86,10 +91,11 @@ void loop()
   if(digitalRead(SENSOR_POWER) == HIGH)
   {
     int objD = objectDetection();
+    //objD=0;
     bool edgeDetected = edgeDetection();
     //stub bools to emulate IR and line detection
    // bool irDetected = false;
-   char IRleft,IRmiddle,IRright,IRtest,IRend,left,right;
+   int IRleft,IRmiddle,IRright,IRtest,IRend,IRDETECleft,IRDETECright;
    IRleft=digitalRead(INFRARED_left);
    IRmiddle=digitalRead(INFRARED_middle);
    IRright=digitalRead(INFRARED_right);
@@ -97,10 +103,20 @@ void loop()
    IRend=digitalRead(INFRARED_end);
    IRDETECleft=digitalRead(IRDETEC_left);
    IRDETECright=digitalRead(IRDETEC_right);
+   Serial.println(edgeDetected);
+   Serial.println(objD);
+   Serial.println(IRleft);
+   Serial.println(IRmiddle);
+   Serial.println(IRright);
+   Serial.println(IRtest);
+   Serial.println(IRend);
+   Serial.println(IRDETECleft);
+   Serial.println(IRDETECright);
     
     //SAFETY CHECKS
     if(edgeDetected)
     {
+      Serial.print("\nedgeDetected\n");
       //TODO: rerouting
       //brake as a placeholder
       brake();
@@ -111,37 +127,47 @@ void loop()
       {
         //more space on the right
         //TODO: turn right
+        Serial.print("\nobjectDetected:right\n");
         right();
       }
       else
       {
         //more space on the left
         //TODO: turn left
+        Serial.print("\nobjectDetected:left\n");
         left();
       }
     }
     else if(IRDETECleft==0||IRDETECright==0){
       if(IRDETECleft==0&&IRDETECright==0){
+        Serial.print("\nbothIRDetected:left\n");
         forward();
       }else if(IRDETECleft==0){
+        Serial.print("\nleftIRDetected:left\n");
         left();
       }else if(IRDETECright==0){
+        Serial.print("\nrightIRDetected:left\n");
         right();
       }else{
         brake();
       }
     }
-    else if(IRtest==0){
-      if(IRend==0&&IRleft==0&&IRmiddle==0&&IRright==0){
+    else if(IRtest==1||IRleft==1||IRright==1||IRmiddle==1){
+      Serial.print("\nmaze\n");
+      if(IRend==1&&IRleft==1&&IRmiddle==1&&IRright==1){
+        Serial.print("\nmazeEnd\n");
         brake();
       }
-      else if(IRleft==0){
+      else if(IRleft==1){
+        Serial.print("\nmazeLeft\n");
         left();
-      }else if(IRmiddle==0){
+      }else if(IRmiddle==1){
+        Serial.print("\nmazeMiddle\n");
         forward();
-      }else if(IRright==0){
+      }else if(IRright==1){
+        Serial.print("\nmazeRight\n");
         right();
-      }else{
+      }else if(IRtest==1){
         left();
       }
     }
@@ -244,7 +270,9 @@ bool edgeDetection()
    if(distance > FLOOR_DISTANCE)
    {
     //edge detected
+    Serial.print("\nedgeDetection:true\n");
     return true; 
    }
+   Serial.print("\nedgeDetection:false\n");
    return false;
 }
